@@ -3,34 +3,41 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+from xgboost import XGBRegressor
 
 st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
 # -----------------------------
-# Load Model (Pipeline + XGBoost)
+# ✅ Load Model (Pipeline + XGBoost)
 # -----------------------------
 try:
-    from xgboost import XGBRegressor
-
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load pipeline (preprocessing + structure)
+    # ✅ Load pipeline (preprocessing only)
     pipeline_path = os.path.join(BASE_DIR, "model", "pipeline.pkl")
-    
     pipeline = joblib.load(pipeline_path)
 
-    # ✅ Load trained XGBoost model
-    xgb_path = os.path.join(BASE_DIR, "model", "xgb_model.json")
-    
+    # ✅ Recreate XGBoost model (same params as training)
+    xgb = XGBRegressor(
+        n_estimators=150,
+        learning_rate=0.08,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        reg_alpha=0.1,
+        reg_lambda=1,
+        n_jobs=-1,
+        random_state=42
+    )
 
-    xgb = XGBRegressor(objective="reg:squarederror")
+    # ✅ Load trained weights
+    xgb_path = os.path.join(BASE_DIR, "model", "xgb_model.json")
     xgb.load_model(xgb_path)
 
-    # ✅ Inject trained model into pipeline
+    # ✅ Inject into pipeline
     pipeline.named_steps["model"] = xgb
-
     model = pipeline
 
     st.success("✅ Model loaded successfully")
@@ -40,9 +47,8 @@ except Exception as e:
     st.stop()
 
 # -----------------------------
-# INPUTS
+# ✅ USER INPUTS
 # -----------------------------
-
 age = st.number_input("Age", 18, 100, 30)
 gender = st.selectbox("Gender", ["Male", "Female"])
 
@@ -51,12 +57,10 @@ marital = st.selectbox("Marital Status", ["Single", "Married", "Divorced"])
 
 dependents = st.number_input("Number of Dependents", 0, 10, 1)
 
-
 education = st.selectbox(
     "Education Level",
     ["High School", "Bachelor's", "Master's", "PhD"]
 )
-
 
 occupation = st.selectbox("Occupation", ["Employed", "Self-Employed", "Unemployed"])
 
@@ -80,17 +84,15 @@ property_type = st.selectbox(
     ["House", "Apartment", "Condo"]
 )
 
-
 policy_date = st.date_input("Policy Start Date")
 
-# Feature engineering
+# ✅ Feature engineering
 policy_year = policy_date.year
 policy_month = policy_date.month
 
 # -----------------------------
-# PREDICT
+# ✅ PREDICT
 # -----------------------------
-
 if st.button("🚀 Predict Premium"):
     try:
         data = pd.DataFrame({
@@ -115,39 +117,29 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ Align columns exactly with training
+        # ✅ Align features exactly like training
         data = data.reindex(columns=model.feature_names_in_, fill_value=0)
 
-        # Predict (log scale)
+        # ✅ Predict (log scale)
         log_pred = model.predict(data)
 
-        
-        # ✅ DEBUG (put here)
-        
-        
-
+        # ✅ Ensure valid values
         log_pred = np.maximum(log_pred, 0)
 
+        # ✅ Convert log → actual premium
         prediction = np.expm1(log_pred)
 
-        
-        
-       
-        # Extract value safely
+        # ✅ Extract scalar
         if isinstance(prediction, np.ndarray):
             prediction = prediction.item()
 
-  
-        
-
-
+        # ✅ Display result
         st.subheader("✅ Prediction Result")
-        
+
         st.metric(
             label="💰 Estimated Premium",
-        value=f"₹ {prediction:,.2f}"   # ✅ NO [0]
+            value=f"₹ {prediction:,.2f}"
         )
-
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
