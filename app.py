@@ -9,24 +9,22 @@ st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
-# -----------------------------
-# Load Model (FINAL FIX)
+#-----------------------------
+# Load Model (FINAL CLEAN)
 # -----------------------------
 try:
-    
     from xgboost import XGBRegressor
 
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load preprocessor only
+    # ✅ Load preprocessor
     preprocessor = joblib.load(os.path.join(BASE_DIR, "model", "preprocessor.pkl"))
 
-    # ✅ Load XGB
+    # ✅ Load XGBoost model
     xgb = XGBRegressor()
     xgb.load_model(os.path.join(BASE_DIR, "model", "xgb_model.json"))
 
     st.success("✅ Model loaded successfully")
-
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
@@ -81,7 +79,6 @@ policy_month = policy_date.month
 # -----------------------------
 if st.button("🚀 Predict Premium"):
     try:
-        # ✅ Create input dataframe
         data = pd.DataFrame({
             "Age": [age],
             "Gender": [gender],
@@ -104,23 +101,20 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ STEP 1: Preprocess using saved preprocessor
+        # ✅ Preprocess features
         X_processed = preprocessor.transform(data)
 
-        # ✅ STEP 2: Predict using XGBoost
+        # ✅ Predict
         log_pred = xgb.predict(X_processed)
 
-        # ✅ STEP 3: Safety (avoid negatives)
+        # ✅ Convert log → real value
         log_pred = np.maximum(log_pred, 0)
-
-        # ✅ STEP 4: Convert log → real value
         prediction = np.expm1(log_pred)
 
-        # ✅ STEP 5: Extract number
         if isinstance(prediction, np.ndarray):
             prediction = prediction.item()
 
-        # ✅ Display result
+        # ✅ Display
         st.subheader("✅ Prediction Result")
         st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
 
