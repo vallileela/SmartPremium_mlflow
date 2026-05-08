@@ -94,7 +94,14 @@ if st.button("🚀 Predict Premium"):
         log_pred = model.predict(data)
 
         # Convert back to original scale
-        prediction = float(np.expm1(log_pred))
+        prediction = np.expm1(log_pred)
+
+        prediction = prediction.item()
+
+        
+        st.write("Log:", log_pred)
+        st.write("Final:", prediction)
+
 
         
         
