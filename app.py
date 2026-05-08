@@ -113,13 +113,13 @@ if st.button("🚀 Predict Premium"):
 
         log_pred = np.maximum(log_pred, 0)
 
-        # Convert back to original scale
-        prediction = np.expm1(log_pred)
-
+        
         
         #extract value safely
-        if isinstance(prediction, np.ndarray):
-            prediction = prediction.item()
+        if isinstance(log_pred, np.ndarray):
+            prediction = log_pred.item()
+        else:
+            prediction=log_pred
   
         
 
