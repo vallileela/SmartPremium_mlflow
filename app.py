@@ -15,7 +15,8 @@ try:
     BASE_DIR = os.path.dirname(__file__)
     model_path = os.path.join(BASE_DIR, "model", "best_model.pkl")
 
-    model = joblib.load(model_path)
+    model = joblib.load("model/best_model.pkl")
+    
     st.success("✅ Model loaded successfully")
 
 except Exception as e:
@@ -89,8 +90,7 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        pred_log = model.predict(data)
-        prediction = np.expm1(pred_log)
+        prediction = np.expm1(model.predict(data))
 
         st.success(f"💰 Estimated Premium: ₹ {prediction[0]:,.2f}")
 
