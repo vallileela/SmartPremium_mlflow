@@ -25,7 +25,7 @@ try:
     xgb_path = os.path.join(BASE_DIR, "model", "xgb_model.json")
     
 
-    xgb = XGBRegressor()
+    xgb = XGBRegressor(objective="reg:squarederror")
     xgb.load_model(xgb_path)
 
     # ✅ Inject trained model into pipeline
