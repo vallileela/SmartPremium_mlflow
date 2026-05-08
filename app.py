@@ -9,15 +9,30 @@ st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 st.title("💰 Insurance Premium Predictor")
 
 # -----------------------------
-# Load Model (robust path)
+# Load Model (Pipeline + XGBoost)
 # -----------------------------
 try:
-    BASE_DIR = os.path.dirname(__file__)
-    model_path = os.path.join(BASE_DIR, "model", "best_model.pkl")
+    from xgboost import XGBRegressor
 
-    model = joblib.load(model_path)
-    type(model)
+    BASE_DIR = os.path.dirname(__file__)
+
+    # ✅ Load pipeline (preprocessing + structure)
+    pipeline_path = os.path.join(BASE_DIR, "model", "pipeline.pkl")
     
+    pipeline = joblib.load(pipeline_path)
+
+    # ✅ Load trained XGBoost model
+    xgb_path = os.path.join(BASE_DIR, "model", "xgb_model.json")
+    
+
+    xgb = XGBRegressor()
+    xgb.load_model(xgb_path)
+
+    # ✅ Inject trained model into pipeline
+    pipeline.named_steps["model"] = xgb
+
+    model = pipeline
+
     st.success("✅ Model loaded successfully")
 
 except Exception as e:
@@ -109,7 +124,7 @@ if st.button("🚀 Predict Premium"):
         
         # ✅ DEBUG (put here)
         
-        st.write("LOG VALUE:", log_pred)
+        
 
         log_pred = np.maximum(log_pred, 0)
 
