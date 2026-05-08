@@ -94,7 +94,7 @@ if st.button("🚀 Predict Premium"):
         log_pred = model.predict(data)
 
         # Convert back to original scale
-        prediction = np.expm1(log_pred)
+        prediction = np.expm1(log_pred)[0]
 
         st.subheader("✅ Prediction Result")
         st.success(f"💰 Estimated Premium: ₹ {prediction[0]:,.2f}")
