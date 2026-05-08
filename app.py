@@ -10,35 +10,19 @@ st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 st.title("💰 Insurance Premium Predictor")
 
 # -----------------------------
-# ✅ Load Model (Pipeline + XGBoost)
+# Load Model (FINAL FIX)
 # -----------------------------
 try:
+    from xgboost import XGBRegressor
+
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load pipeline (preprocessing only)
-    pipeline_path = os.path.join(BASE_DIR, "model", "pipeline.pkl")
-    pipeline = joblib.load(pipeline_path)
+    # ✅ Load pipeline (ONLY preprocessing)
+    pipeline = joblib.load(os.path.join(BASE_DIR, "model", "pipeline.pkl"))
 
-    # ✅ Recreate XGBoost model (same params as training)
-    xgb = XGBRegressor(
-        n_estimators=150,
-        learning_rate=0.08,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        reg_alpha=0.1,
-        reg_lambda=1,
-        n_jobs=-1,
-        random_state=42
-    )
-
-    # ✅ Load trained weights
-    xgb_path = os.path.join(BASE_DIR, "model", "xgb_model.json")
-    xgb.load_model(xgb_path)
-
-    # ✅ Inject into pipeline
-    pipeline.named_steps["model"] = xgb
-    model = pipeline
+    # ✅ Load trained XGBoost
+    xgb = XGBRegressor()
+    xgb.load_model(os.path.join(BASE_DIR, "model", "xgb_model.json"))
 
     st.success("✅ Model loaded successfully")
 
@@ -118,10 +102,14 @@ if st.button("🚀 Predict Premium"):
         })
 
         # ✅ Align features exactly like training
-        data = data.reindex(columns=model.feature_names_in_, fill_value=0)
+        data = data.reindex(columns=pipeline.feature_names_in_, fill_value=0)
+        
+        # ✅ Step 1: Preprocess features using pipeline
+        X_processed = pipeline.transform(data)
 
-        # ✅ Predict (log scale)
-        log_pred = model.predict(data)
+        # ✅ Step 2: Predict using XGBoost directly
+        log_pred = xgb.predict(X_processed)
+
 
         # ✅ Ensure valid values
         log_pred = np.maximum(log_pred, 0)
