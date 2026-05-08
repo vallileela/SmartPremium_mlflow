@@ -15,7 +15,8 @@ try:
     BASE_DIR = os.path.dirname(__file__)
     model_path = os.path.join(BASE_DIR, "model", "best_model.pkl")
 
-    model = joblib.load("model/best_model.pkl")
+    model = joblib.load(model_path)
+    type(model)
     
     st.success("✅ Model loaded successfully")
 
@@ -31,12 +32,13 @@ age = st.number_input("Age", 18, 100, 30)
 gender = st.selectbox("Gender", ["Male", "Female"])
 
 income = st.number_input("Annual Income", 10000, 1000000, 50000)
-marital = st.selectbox("Marital Status", ["Single", "Married"])
+marital = st.selectbox("Marital Status", ["Single", "Married", "Divorced"])
 
 dependents = st.number_input("Number of Dependents", 0, 10, 1)
 
 education = st.selectbox("Education Level", ["High School", "Bachelor", "Master", "PhD"])
-occupation = st.selectbox("Occupation", ["Salaried", "Business", "Self-Employed"])
+
+occupation = st.selectbox("Occupation", ["Employed", "Self-Employed", "Unemployed"])
 
 health = st.slider("Health Score", 0, 100, 70)
 
@@ -51,8 +53,7 @@ credit = st.number_input("Credit Score", 300, 900, 650)
 insurance_duration = st.number_input("Insurance Duration", 0, 20, 5)
 
 smoking = st.selectbox("Smoking Status", ["Yes", "No"])
-exercise = st.selectbox("Exercise Frequency", ["Low", "Medium", "High"])
-
+exercise = st.selectbox("Exercise Frequency", ["Daily", "Weekly", "Monthly", "Rarely"])
 property_type = st.selectbox("Property Type", ["House", "Apartment"])
 
 policy_date = st.date_input("Policy Start Date")
@@ -66,7 +67,6 @@ policy_month = policy_date.month
 # -----------------------------
 
 if st.button("🚀 Predict Premium"):
-
     try:
         data = pd.DataFrame({
             "Age": [age],
@@ -90,8 +90,13 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        prediction = np.expm1(model.predict(data))
+        # Predict (log scale)
+        log_pred = model.predict(data)
 
+        # Convert back to original scale
+        prediction = np.expm1(log_pred)
+
+        st.subheader("✅ Prediction Result")
         st.success(f"💰 Estimated Premium: ₹ {prediction[0]:,.2f}")
 
     except Exception as e:
