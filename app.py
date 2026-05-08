@@ -108,6 +108,7 @@ if st.button("🚀 Predict Premium"):
 
         
         # ✅ DEBUG (put here)
+        st.write("DATA SENT TO MODEL:", data)
         st.write("LOG VALUE:", log_pred)
 
         log_pred = np.maximum(log_pred, 0)
