@@ -13,18 +13,20 @@ st.title("💰 Insurance Premium Predictor")
 # Load Model (FINAL FIX)
 # -----------------------------
 try:
+    
     from xgboost import XGBRegressor
 
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load pipeline (ONLY preprocessing)
-    pipeline = joblib.load(os.path.join(BASE_DIR, "model", "pipeline.pkl"))
+    # ✅ Load preprocessor only
+    preprocessor = joblib.load(os.path.join(BASE_DIR, "model", "preprocessor.pkl"))
 
-    # ✅ Load trained XGBoost
+    # ✅ Load XGB
     xgb = XGBRegressor()
     xgb.load_model(os.path.join(BASE_DIR, "model", "xgb_model.json"))
 
     st.success("✅ Model loaded successfully")
+
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
@@ -79,6 +81,7 @@ policy_month = policy_date.month
 # -----------------------------
 if st.button("🚀 Predict Premium"):
     try:
+        # ✅ Create input dataframe
         data = pd.DataFrame({
             "Age": [age],
             "Gender": [gender],
@@ -101,33 +104,25 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ Align features exactly like training
-        data = data.reindex(columns=pipeline.feature_names_in_, fill_value=0)
-        
-        # ✅ Step 1: Preprocess features using pipeline
-        X_processed = pipeline.transform(data)
+        # ✅ STEP 1: Preprocess using saved preprocessor
+        X_processed = preprocessor.transform(data)
 
-        # ✅ Step 2: Predict using XGBoost directly
+        # ✅ STEP 2: Predict using XGBoost
         log_pred = xgb.predict(X_processed)
 
-
-        # ✅ Ensure valid values
+        # ✅ STEP 3: Safety (avoid negatives)
         log_pred = np.maximum(log_pred, 0)
 
-        # ✅ Convert log → actual premium
+        # ✅ STEP 4: Convert log → real value
         prediction = np.expm1(log_pred)
 
-        # ✅ Extract scalar
+        # ✅ STEP 5: Extract number
         if isinstance(prediction, np.ndarray):
             prediction = prediction.item()
 
         # ✅ Display result
         st.subheader("✅ Prediction Result")
-
-        st.metric(
-            label="💰 Estimated Premium",
-            value=f"₹ {prediction:,.2f}"
-        )
+        st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
