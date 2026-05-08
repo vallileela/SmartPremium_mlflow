@@ -36,7 +36,12 @@ marital = st.selectbox("Marital Status", ["Single", "Married", "Divorced"])
 
 dependents = st.number_input("Number of Dependents", 0, 10, 1)
 
-education = st.selectbox("Education Level", ["High School", "Bachelor", "Master", "PhD"])
+
+education = st.selectbox(
+    "Education Level",
+    ["High School", "Bachelor's", "Master's", "PhD"]
+)
+
 
 occupation = st.selectbox("Occupation", ["Employed", "Self-Employed", "Unemployed"])
 
@@ -54,7 +59,12 @@ insurance_duration = st.number_input("Insurance Duration", 0, 20, 5)
 
 smoking = st.selectbox("Smoking Status", ["Yes", "No"])
 exercise = st.selectbox("Exercise Frequency", ["Daily", "Weekly", "Monthly", "Rarely"])
-property_type = st.selectbox("Property Type", ["House", "Apartment"])
+
+property_type = st.selectbox(
+    "Property Type",
+    ["House", "Apartment", "Condo"]
+)
+
 
 policy_date = st.date_input("Policy Start Date")
 
@@ -90,8 +100,16 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
+        # ✅ Align columns exactly with training
+        data = data.reindex(columns=model.feature_names_in_, fill_value=0)
+
         # Predict (log scale)
         log_pred = model.predict(data)
+
+        
+        # ✅ DEBUG (put here)
+        st.write("LOG VALUE:", log_pred)
+
         log_pred = np.maximum(log_pred, 0)
 
         # Convert back to original scale
