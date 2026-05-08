@@ -92,9 +92,16 @@ if st.button("🚀 Predict Premium"):
 
         # Predict (log scale)
         log_pred = model.predict(data)
+        log_pred = np.maximum(log_pred, 0)
 
         # Convert back to original scale
-        prediction = np.expm1(log_pred).item()     
+        prediction = np.expm1(log_pred)
+
+        
+        #extract value safely
+        if isinstance(prediction, np.ndarray):
+            prediction = prediction.item()
+  
         
 
 
