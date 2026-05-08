@@ -94,21 +94,17 @@ if st.button("🚀 Predict Premium"):
         log_pred = model.predict(data)
 
         # Convert back to original scale
-        prediction = np.expm1(log_pred)
-
-        prediction = prediction.item()
-
-        
-        st.write("Log:", log_pred)
-        st.write("Final:", prediction)
-
-
-        
+        prediction = np.expm1(log_pred).item()     
         
 
 
         st.subheader("✅ Prediction Result")
-        st.success(f"💰 Estimated Premium: ₹ {prediction[0]:,.2f}")
+        
+        st.metric(
+            label="💰 Estimated Premium",
+        value=f"₹ {prediction:,.2f}"   # ✅ NO [0]
+        )
+
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
