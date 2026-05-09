@@ -3,18 +3,16 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-from xgboost import XGBRegressor
+import xgboost as xgb
 
 st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
-
 # -----------------------------
-# Load Model (FINAL FIX ✅)
+# ✅ Load Model
 # -----------------------------
 try:
-    import xgboost as xgb
     BASE_DIR = os.path.dirname(__file__)
 
     # ✅ Load preprocessor
@@ -22,7 +20,7 @@ try:
         os.path.join(BASE_DIR, "model", "preprocessor.pkl")
     )
 
-    # ✅ Load XGBoost Booster (NOT sklearn wrapper)
+    # ✅ Load XGBoost model (Booster)
     booster = xgb.Booster()
     booster.load_model(
         os.path.join(BASE_DIR, "model", "xgb_model.json")
@@ -33,7 +31,6 @@ try:
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
-
 
 # -----------------------------
 # ✅ USER INPUTS
@@ -84,6 +81,7 @@ policy_month = policy_date.month
 # -----------------------------
 if st.button("🚀 Predict Premium"):
     try:
+        # ✅ Create dataframe
         data = pd.DataFrame({
             "Age": [age],
             "Gender": [gender],
@@ -106,31 +104,24 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        
-        # ✅ ADD THIS LINE HERE (very important)
-        data = data[preprocessor.feature_names_in_]
+        # ✅ Align columns correctly
+        data = data.reindex(columns=preprocessor.feature_names_in_, fill_value=0)
 
-
-        
-        # ✅ Preprocess features
+        # ✅ Transform features
         X_processed = preprocessor.transform(data)
 
-        # ✅ Convert to DMatrix (IMPORTANT)
+        # ✅ Convert to DMatrix
         dmatrix = xgb.DMatrix(X_processed)
 
-        # ✅ Predict using Booster
-        log_pred = booster.predict(dmatrix)
+        # ✅ Predict (NO LOG NOW ✅)
+        prediction = booster.predict(dmatrix)
 
-        # ✅ Convert log → real
-        
-        prediction = np.expm1(log_pred)
+        # ✅ Convert to scalar
+        prediction = prediction.item()
 
-        if isinstance(prediction, np.ndarray):
-            prediction = prediction.item()
-
-        # ✅ Display
+        # ✅ Display result
+        st.subheader("✅ Prediction Result")
         st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
-
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
