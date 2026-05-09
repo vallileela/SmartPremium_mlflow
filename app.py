@@ -17,7 +17,7 @@ try:
 
     # ✅ Load preprocessor
     preprocessor = joblib.load(
-        os.path.join(BASE_DIR, "model", "preprocessor.pkl")
+        os.path.join(BASE_DIR, "model", "preprocessor_v2.pkl")
     )
 
     # ✅ Load XGBoost model (Booster)
