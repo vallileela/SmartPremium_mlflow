@@ -107,6 +107,11 @@ if st.button("🚀 Predict Premium"):
         })
 
         
+        # ✅ ADD THIS LINE HERE (very important)
+        data = data[preprocessor.feature_names_in_]
+
+
+        
         # ✅ Preprocess features
         X_processed = preprocessor.transform(data)
 
@@ -117,7 +122,7 @@ if st.button("🚀 Predict Premium"):
         log_pred = booster.predict(dmatrix)
 
         # ✅ Convert log → real
-        log_pred = np.maximum(log_pred, 0)
+        
         prediction = np.expm1(log_pred)
 
         if isinstance(prediction, np.ndarray):
