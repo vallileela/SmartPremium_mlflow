@@ -3,27 +3,27 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-from xgboost import XGBRegressor
+import xgboost as xgb
 
 st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
 # -----------------------------
-# ✅ Load Model (FINAL FIX)
+# ✅ LOAD MODEL
 # -----------------------------
 try:
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load preprocessor (v2)
+    # ✅ Load preprocessor
     preprocessor = joblib.load(
         os.path.join(BASE_DIR, "model", "preprocessor_v2.pkl")
     )
 
-    # ✅ Load XGBoost (sklearn wrapper ✅)
-    xgb_model = XGBRegressor()
-    xgb_model.load_model(
-        os.path.join(BASE_DIR, "model", "xgb_model.json")
+    # ✅ Load XGBoost Booster (FINAL SAFE)
+    booster = xgb.Booster()
+    booster.load_model(
+        os.path.join(BASE_DIR, "model", "xgb_model_v2.json")
     )
 
     st.success("✅ Model loaded successfully")
@@ -81,7 +81,6 @@ policy_month = policy_date.month
 # -----------------------------
 if st.button("🚀 Predict Premium"):
     try:
-        # ✅ Create dataframe
         data = pd.DataFrame({
             "Age": [age],
             "Gender": [gender],
@@ -104,23 +103,20 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ Align columns EXACTLY like training
+        # ✅ ALIGN FEATURES
         data = data.reindex(columns=preprocessor.feature_names_in_, fill_value=0)
 
-        # ✅ Transform
+        # ✅ TRANSFORM
         X_processed = preprocessor.transform(data)
 
-        # ✅ DEBUG (optional - can remove later)
-        st.write("Using file:", "preprocessor_v2.pkl")
-        st.write("Transformed shape:", X_processed.shape)
+        # ✅ CONVERT TO DMATRIX
+        dmatrix = xgb.DMatrix(X_processed)
 
-        # ✅ Predict using SKLEARN wrapper ✅
-        prediction = xgb_model.predict(X_processed)
+        # ✅ PREDICT
+        prediction = booster.predict(dmatrix)
 
-        # ✅ Convert to scalar
         prediction = prediction.item()
 
-        # ✅ Display result
         st.subheader("✅ Prediction Result")
         st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
 
