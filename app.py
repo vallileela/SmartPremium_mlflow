@@ -3,27 +3,27 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
-import xgboost as xgb
+from xgboost import XGBRegressor
 
 st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
 # -----------------------------
-# ✅ Load Model
+# ✅ Load Model (FINAL FIX)
 # -----------------------------
 try:
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load preprocessor
+    # ✅ Load preprocessor (v2)
     preprocessor = joblib.load(
         os.path.join(BASE_DIR, "model", "preprocessor_v2.pkl")
     )
 
-    # ✅ Load XGBoost model (Booster)
-    booster = xgb.Booster()
-    booster.load_model(
-        os.path.join(BASE_DIR, "model", "xgb_model_v2.json")
+    # ✅ Load XGBoost (sklearn wrapper ✅)
+    xgb_model = XGBRegressor()
+    xgb_model.load_model(
+        os.path.join(BASE_DIR, "model", "xgb_model.json")
     )
 
     st.success("✅ Model loaded successfully")
@@ -104,23 +104,18 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ Align columns correctly
+        # ✅ Align columns EXACTLY like training
         data = data.reindex(columns=preprocessor.feature_names_in_, fill_value=0)
 
-        # ✅ Transform features
+        # ✅ Transform
         X_processed = preprocessor.transform(data)
 
-        
-        # ✅ DEBUG LINES (add here)
+        # ✅ DEBUG (optional - can remove later)
         st.write("Using file:", "preprocessor_v2.pkl")
         st.write("Transformed shape:", X_processed.shape)
 
-
-        # ✅ Convert to DMatrix
-        dmatrix = xgb.DMatrix(X_processed)
-
-        # ✅ Predict (NO LOG NOW ✅)
-        prediction = booster.predict(dmatrix)
+        # ✅ Predict using SKLEARN wrapper ✅
+        prediction = xgb_model.predict(X_processed)
 
         # ✅ Convert to scalar
         prediction = prediction.item()
