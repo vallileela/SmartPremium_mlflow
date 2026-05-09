@@ -21,10 +21,11 @@ try:
     )
 
     # ✅ Load XGBoost Booster (FINAL SAFE)
-    booster = xgb.Booster()
-    booster.load_model(
-        os.path.join(BASE_DIR, "model", "xgb_model_v2.json")
+   
+    xgb_model = joblib.load(
+        os.path.join(BASE_DIR, "model", "xgb_model_final.pkl")
     )
+
 
     st.success("✅ Model loaded successfully")
 
@@ -109,11 +110,10 @@ if st.button("🚀 Predict Premium"):
         # ✅ TRANSFORM
         X_processed = preprocessor.transform(data)
 
-        # ✅ CONVERT TO DMATRIX
-        dmatrix = xgb.DMatrix(X_processed)
+        
+        prediction = xgb_model.predict(X_processed)
+        
 
-        # ✅ PREDICT
-        prediction = booster.predict(dmatrix)
 
         prediction = prediction.item()
 
