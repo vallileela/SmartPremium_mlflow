@@ -21,7 +21,15 @@ try:
     preprocessor = joblib.load(os.path.join(BASE_DIR, "model", "preprocessor.pkl"))
 
     # ✅ Load XGBoost model
-    xgb = XGBRegressor()
+    
+    xgb = XGBRegressor(
+        n_estimators=150,
+        learning_rate=0.08,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8
+    )
+
     xgb.load_model(os.path.join(BASE_DIR, "model", "xgb_model.json"))
 
     st.success("✅ Model loaded successfully")
