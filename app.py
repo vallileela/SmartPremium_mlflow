@@ -23,7 +23,7 @@ try:
     # ✅ Load XGBoost model (Booster)
     booster = xgb.Booster()
     booster.load_model(
-        os.path.join(BASE_DIR, "model", "xgb_model.json")
+        os.path.join(BASE_DIR, "model", "xgb_model_v2.json")
     )
 
     st.success("✅ Model loaded successfully")
