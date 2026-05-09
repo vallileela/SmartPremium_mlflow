@@ -110,6 +110,12 @@ if st.button("🚀 Predict Premium"):
         # ✅ Transform features
         X_processed = preprocessor.transform(data)
 
+        
+        # ✅ DEBUG LINES (add here)
+        st.write("Using file:", "preprocessor_v2.pkl")
+        st.write("Transformed shape:", X_processed.shape)
+
+
         # ✅ Convert to DMatrix
         dmatrix = xgb.DMatrix(X_processed)
 
