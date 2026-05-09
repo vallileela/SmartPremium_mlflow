@@ -9,34 +9,31 @@ st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
-#-----------------------------
-# Load Model (FINAL CLEAN)
+
+# -----------------------------
+# Load Model (FINAL FIX ✅)
 # -----------------------------
 try:
-    from xgboost import XGBRegressor
-
+    import xgboost as xgb
     BASE_DIR = os.path.dirname(__file__)
 
     # ✅ Load preprocessor
-    preprocessor = joblib.load(os.path.join(BASE_DIR, "model", "preprocessor.pkl"))
-
-    # ✅ Load XGBoost model
-    
-    xgb = XGBRegressor(
-        n_estimators=150,
-        learning_rate=0.08,
-        max_depth=6,
-        subsample=0.8,
-        colsample_bytree=0.8
+    preprocessor = joblib.load(
+        os.path.join(BASE_DIR, "model", "preprocessor.pkl")
     )
 
-    xgb.load_model(os.path.join(BASE_DIR, "model", "xgb_model.json"))
+    # ✅ Load XGBoost Booster (NOT sklearn wrapper)
+    booster = xgb.Booster()
+    booster.load_model(
+        os.path.join(BASE_DIR, "model", "xgb_model.json")
+    )
 
     st.success("✅ Model loaded successfully")
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
+
 
 # -----------------------------
 # ✅ USER INPUTS
@@ -109,13 +106,17 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
+        
         # ✅ Preprocess features
         X_processed = preprocessor.transform(data)
 
-        # ✅ Predict
-        log_pred = xgb.predict(X_processed)
+        # ✅ Convert to DMatrix (IMPORTANT)
+        dmatrix = xgb.DMatrix(X_processed)
 
-        # ✅ Convert log → real value
+        # ✅ Predict using Booster
+        log_pred = booster.predict(dmatrix)
+
+        # ✅ Convert log → real
         log_pred = np.maximum(log_pred, 0)
         prediction = np.expm1(log_pred)
 
@@ -123,8 +124,8 @@ if st.button("🚀 Predict Premium"):
             prediction = prediction.item()
 
         # ✅ Display
-        st.subheader("✅ Prediction Result")
         st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
+
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
