@@ -8,14 +8,12 @@ st.set_page_config(page_title="Insurance Premium Predictor", layout="centered")
 
 st.title("💰 Insurance Premium Predictor")
 
-
 # -----------------------------
-# ✅ LOAD MODEL (FINAL FIX ✅)
+# ✅ LOAD FULL PIPELINE
 # -----------------------------
 try:
     BASE_DIR = os.path.dirname(__file__)
 
-    # ✅ Load FULL pipeline
     pipeline = joblib.load(
         os.path.join(BASE_DIR, "model", "final_pipeline.pkl")
     )
@@ -26,16 +24,13 @@ except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
 
-
 # -----------------------------
 # ✅ USER INPUTS
 # -----------------------------
 age = st.number_input("Age", 18, 100, 30)
 gender = st.selectbox("Gender", ["Male", "Female"])
-
 income = st.number_input("Annual Income", 10000, 1000000, 50000)
 marital = st.selectbox("Marital Status", ["Single", "Married", "Divorced"])
-
 dependents = st.number_input("Number of Dependents", 0, 10, 1)
 
 education = st.selectbox(
@@ -44,21 +39,22 @@ education = st.selectbox(
 )
 
 occupation = st.selectbox("Occupation", ["Employed", "Self-Employed", "Unemployed"])
-
 health = st.slider("Health Score", 0, 100, 70)
 
 location = st.selectbox("Location", ["Urban", "Rural", "Suburban"])
 policy = st.selectbox("Policy Type", ["Basic", "Premium", "Comprehensive"])
 
 claims = st.number_input("Previous Claims", 0, 20, 0)
-
 vehicle_age = st.number_input("Vehicle Age", 0, 30, 5)
 credit = st.number_input("Credit Score", 300, 900, 650)
 
 insurance_duration = st.number_input("Insurance Duration", 0, 20, 5)
 
 smoking = st.selectbox("Smoking Status", ["Yes", "No"])
-exercise = st.selectbox("Exercise Frequency", ["Daily", "Weekly", "Monthly", "Rarely"])
+exercise = st.selectbox(
+    "Exercise Frequency",
+    ["Daily", "Weekly", "Monthly", "Rarely"]
+)
 
 property_type = st.selectbox(
     "Property Type",
@@ -67,12 +63,11 @@ property_type = st.selectbox(
 
 policy_date = st.date_input("Policy Start Date")
 
-# ✅ Feature engineering
 policy_year = policy_date.year
 policy_month = policy_date.month
 
 # -----------------------------
-# ✅ PREDICT
+# ✅ PREDICTION
 # -----------------------------
 if st.button("🚀 Predict Premium"):
     try:
@@ -98,9 +93,10 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ Direct prediction (IMPORTANT ✅)
+        # ✅ ONE LINE PREDICTION (PIPELINE HANDLES EVERYTHING)
         prediction = pipeline.predict(data)
 
+        # ✅ Safe conversion
         if isinstance(prediction, np.ndarray):
             prediction = float(prediction[0])
 
