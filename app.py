@@ -92,6 +92,11 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
+        
+        # ✅ CRITICAL FIX
+        data = data[pipeline.feature_names_in_]
+
+
         # ✅ ONE LINE — PIPELINE HANDLES EVERYTHING
         prediction = pipeline.predict(data)
 
