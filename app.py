@@ -104,21 +104,36 @@ if st.button("🚀 Predict Premium"):
             "Property Type": [property_type]
         })
 
-        # ✅ ALIGN FEATURES
-        data = data.reindex(columns=preprocessor.feature_names_in_, fill_value=0)
+        
+        # ✅ STEP 1: Force EXACT structure
+        data = pd.DataFrame(data.to_dict(orient="list"))
 
-        # ✅ TRANSFORM
+        # ✅ STEP 2: Align with training columns
+        data = data[preprocessor.feature_names_in_]
+
+        # ✅ STEP 3: Fix categorical types
+        for col in data.select_dtypes(include="object").columns:
+            data[col] = data[col].astype(str)
+
+        # ✅ STEP 4: Transform
         X_processed = preprocessor.transform(data)
 
-        
+        # ✅ DEBUG (important for confirmation)
+        st.write("Transformed values:", X_processed[0])
+
+        # ✅ STEP 5: Predict
         prediction = xgb_model.predict(X_processed)
+
         
-
-
-        prediction = prediction.item()
-
+        
+        if isinstance(prediction, np.ndarray):
+            prediction = float(prediction[0])
+        
+        # ✅ Display
         st.subheader("✅ Prediction Result")
+
         st.metric("💰 Estimated Premium", f"₹ {prediction:,.2f}")
+
 
     except Exception as e:
         st.error(f"Prediction failed: {e}")
