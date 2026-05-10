@@ -93,8 +93,10 @@ if st.button("🚀 Predict Premium"):
         })
 
         
-        # ✅ CRITICAL FIX
-        data = data[pipeline.feature_names_in_]
+        
+        #✅ FORCE EXACT TRAIN COLUMN ORDER (SAFE WAY)
+        data = data.reindex(columns=pipeline.feature_names_in_, fill_value=0)
+
 
 
         # ✅ ONE LINE — PIPELINE HANDLES EVERYTHING
