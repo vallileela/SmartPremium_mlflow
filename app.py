@@ -123,6 +123,11 @@ if st.button("🚀 Predict Premium"):
 
         # ✅ STEP 5: Predict
         prediction = xgb_model.predict(X_processed)
+        
+        # ✅ DEBUG LINES (ADD HERE)
+        st.write("Model file used:", "xgb_model_final.pkl")
+        st.write("Raw prediction:", prediction)
+
 
         
         
